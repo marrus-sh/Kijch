@@ -96,16 +96,16 @@ document.getElementById("go").addEventListener("click", ( ) => {
 		const
 			charset = new Kijch.Charset(document.getElementById("document").value)
 			, codepoint = parseInt(document.getElementById("codepoint").value, 16)
-			, character = charset.characters[codepoint] || { }
+			, character = charset.characters[codepoint]
 		document.getElementById("result").textContent =
 			`CHARSET <${ charset.IRI }>
   Version: ${ charset.version }
   Revision: ${ charset.revision }
 
-CHARACTER @ ${ new Array(3 - Math.floor(codepoint ? Math.log2(codepoint) / 4 : 0)).fill(0).join("") + codepoint.toString(16).toUpperCase() }
+CHARACTER @ ${ new Array(3 - Math.floor(codepoint ? Math.log2(codepoint) / 4 : 0)).fill(0).join("") + codepoint.toString(16).toUpperCase() }${ character ? `
   Unicode mapping: <${ character.unicode.map(( scalar ) => "U+" + (scalar < 0x10000 ? new Array(3 - Math.floor(scalar ? Math.log2(scalar) / 4 : 0)).fill(0).join("") : "") + scalar.toString(16).toUpperCase()).join(", ")}>
   Name: ${ character.name || "" }
-  Basic type: ${ (character.basicType || "https://vocab.KIBI.network/Kixt/#UNASSIGNED").replace("https://vocab.KIBI.network/Kixt/#", "") }
+  Basic type: ${ character.basicType.replace("https://vocab.KIBI.network/Kixt/#", "") }
   Block: ${ character.block || "NO BLOCK" }
   Script: ${ character.script }${ (temp = character.compatibility).length > 1 || temp[0] != character ? `
   Compatibility: [${ character.compatibilityMode }] ${ temp.map(( char ) => char.codepoint.toString(16).toUpperCase() + " " + char.name).join(", ") }` : "" }${ (temp = character.decomposition).length > 1 || temp[0] != character ? `
@@ -114,37 +114,39 @@ CHARACTER @ ${ new Array(3 - Math.floor(codepoint ? Math.log2(codepoint) / 4 : 0
   Width: ${ character.fullwidth == null ? "Contextual" : character.fullwidth ? "Fullwidth" : "Proportional" }${ character.conjoiningMode != null ? `
   Conjoins with: <${ character.conjoiningMode }>${ character.conjoiningClass != 0 ? " with class " + character.conjoiningClass.toString(16).toUpperCase() : " as base" }` : "" }
   Combines: ${ character.segments == null ? "No" : character.segments ? "As divider" : "As extender" }${ character.combiningClass != 0 ? " with class " + character.combiningClass.toString(16).toUpperCase() : "" }
-  As text: ${ (character.unicode || []).map(( codepoint ) => String.fromCodePoint(codepoint)).join("") }`
-		if ( character.aliases.size ) {
-			document.getElementById("result").textContent += "\n\n  Aliases:"
-			character.aliases.forEach(( alias ) => document.getElementById("result").textContent += `
+  As text: ${ (character.unicode || []).map(( codepoint ) => String.fromCodePoint(codepoint)).join("") }` : `
+  Basic type: UNASSIGNED` }`
+  		if ( character ) {
+			if ( character.aliases.size ) {
+				document.getElementById("result").textContent += "\n\n  Aliases:"
+				character.aliases.forEach(( alias ) => document.getElementById("result").textContent += `
     = ${ alias }`) }
-		if ( character.alsoKnownAs.size ) {
-			document.getElementById("result").textContent += "\n\n  Also known as:"
-			character.alsoKnownAs.forEach(( otherName ) => document.getElementById("result").textContent += `
+			if ( character.alsoKnownAs.size ) {
+				document.getElementById("result").textContent += "\n\n  Also known as:"
+				character.alsoKnownAs.forEach(( otherName ) => document.getElementById("result").textContent += `
     - ${ otherName }`) }
-		if ( character.notes.size ) {
-			document.getElementById("result").textContent += "\n\n  Notes:"
-			character.notes.forEach(( note ) => document.getElementById("result").textContent += `
+			if ( character.notes.size ) {
+				document.getElementById("result").textContent += "\n\n  Notes:"
+				character.notes.forEach(( note ) => document.getElementById("result").textContent += `
     * ${ note }`) }
-		if ( character.references.size ) {
-			document.getElementById("result").textContent += "\n\n  See also:"
-			character.references.forEach(( reference ) => document.getElementById("result").textContent += `
+			if ( character.references.size ) {
+				document.getElementById("result").textContent += "\n\n  See also:"
+				character.references.forEach(( reference ) => document.getElementById("result").textContent += `
     > ${ reference.codepoint.toString(16).toUpperCase() } ${ reference.name }`) }
-		if ( Object.keys(character.glyphs).length ) {
-			document.getElementById("result").textContent += "\n\n  Glyphs:"
-			Object.keys(character.glyphs).slice().sort(( a, b ) => (a = parseInt(a, 10) >>> 0) < (b = parseInt(b, 10) >>> 0) ? -1 : a > b ? 1 : 0).forEach(( size ) => {
-				const canvas = document.createElement("CANVAS")
-					, context = canvas.getContext("2d")
-					, glyph = character.glyphs[size]
-					, imageData = context.createImageData(glyph.width, glyph.height)
-				let pixel = 0
-				canvas.width = glyph.width
-				canvas.height = glyph.height
-				canvas.setAttribute("Style", `Width: ${ glyph.width * 4 }PX ; Height: ${ glyph.height * 4 }PX`)
-				canvas.title = size
-				for ( ; pixel < imageData.data.length / 4 ; pixel++ ) imageData.data[pixel * 4 + 0] = imageData.data[pixel * 4 + 1] = imageData.data[pixel * 4 + 2] = 0xFF ^ (imageData.data[pixel * 4 + 3] = 0xFF * glyph.valueAtIndex(pixel))
-				context.putImageData(imageData, 0, 0)
-				document.getElementById("result").appendChild(canvas) }) } } catch ( error ) { document.getElementById("result").textContent = `${ error.name }: ${ error.message }` }
+			if ( Object.keys(character.glyphs).length ) {
+				document.getElementById("result").textContent += "\n\n  Glyphs:"
+				Object.keys(character.glyphs).slice().sort(( a, b ) => (a = parseInt(a, 10) >>> 0) < (b = parseInt(b, 10) >>> 0) ? -1 : a > b ? 1 : 0).forEach(( size ) => {
+					const canvas = document.createElement("CANVAS")
+						, context = canvas.getContext("2d")
+						, glyph = character.glyphs[size]
+						, imageData = context.createImageData(glyph.width, glyph.height)
+					let pixel = 0
+					canvas.width = glyph.width
+					canvas.height = glyph.height
+					canvas.setAttribute("Style", `Width: ${ glyph.width * 4 }PX ; Height: ${ glyph.height * 4 }PX`)
+					canvas.title = size
+					for ( ; pixel < imageData.data.length / 4 ; pixel++ ) imageData.data[pixel * 4 + 0] = imageData.data[pixel * 4 + 1] = imageData.data[pixel * 4 + 2] = 0xFF ^ (imageData.data[pixel * 4 + 3] = 0xFF * glyph.valueAtIndex(pixel))
+					context.putImageData(imageData, 0, 0)
+					document.getElementById("result").appendChild(canvas) }) } } } catch ( error ) { document.getElementById("result").textContent = `${ error.name }: ${ error.message }` }
 })
 </SCRIPT>
