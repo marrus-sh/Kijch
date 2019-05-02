@@ -133,18 +133,18 @@ CHARACTER @ ${ new Array(3 - Math.floor(codepoint ? Math.log2(codepoint) / 4 : 0
 				document.getElementById("result").textContent += "\n\n  See also:"
 				character.references.forEach(( reference ) => document.getElementById("result").textContent += `
     > ${ reference.codepoint.toString(16).toUpperCase() } ${ reference.name }`) }
-			if ( Object.keys(character.glyphs).length ) {
+			if ( character.glyphs.dimensions.size ) {
 				document.getElementById("result").textContent += "\n\n  Glyphs:"
-				Object.keys(character.glyphs).slice().sort(( a, b ) => (a = parseInt(a, 10) >>> 0) < (b = parseInt(b, 10) >>> 0) ? -1 : a > b ? 1 : 0).forEach(( size ) => {
+				character.glyphs.dimensions.forEach(( dimension ) => {
 					const canvas = document.createElement("CANVAS")
 						, context = canvas.getContext("2d")
-						, glyph = character.glyphs[size]
+						, glyph = character.glyphs[dimension]
 						, imageData = context.createImageData(glyph.width, glyph.height)
 					let pixel = 0
 					canvas.width = glyph.width
 					canvas.height = glyph.height
 					canvas.setAttribute("Style", `Width: ${ glyph.width * 4 }PX ; Height: ${ glyph.height * 4 }PX`)
-					canvas.title = size
+					canvas.title = dimension
 					for ( ; pixel < imageData.data.length / 4 ; pixel++ ) imageData.data[pixel * 4 + 0] = imageData.data[pixel * 4 + 1] = imageData.data[pixel * 4 + 2] = 0xFF ^ (imageData.data[pixel * 4 + 3] = 0xFF * glyph.valueAtIndex(pixel))
 					context.putImageData(imageData, 0, 0)
 					document.getElementById("result").appendChild(canvas) }) } } } catch ( error ) { document.getElementById("result").textContent = `${ error.name }: ${ error.message }` }
