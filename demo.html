@@ -57,32 +57,39 @@ CANVAS:Last-Child { Margin-Bottom: 0 }
 
 <P>Document format: <a href="https://spec.KIBI.network/Kixt/-/Charset/" target="_blank"><cite>Kixt Charset</cite></a>
 <P>Enter your document here:
-<TEXTAREA ID=document>CHARSET@example:URI
-
-| This sample charset defines two characters: 0049 and 0069.
+<TEXTAREA ID=document>;CHARSET<example:URI>
+&VARIABLE
+- Example charset
+* This sample charset defines two characters: 0049 and 0069.
 
 % EXAMPLE
-@example:Roman
+= EXAMPLE BLOCK
+- exblock
+* An example block.
+
+' <example:Roman>
+- exscript
+* An example script.
 
 U+0069 LATIN SMALL LETTER I
-: 10 010 01 | ROMAN MINUSCULE LETTER I [SPACING]
-! PROPORTIONAL
+; 10 010 01 / ROMAN MINUSCULE LETTER I (SPACING)
+& PROPORTIONAL
 = LATIN SMALL LETTER I
 - Lowercase I
 * When the distinction is necessary, this is the form with the dot.
 > 69 ROMAN MINUSCULE LETTER DOTLESS I
-# 06606E6F
-# 00001C1C00001C3C1C1C1C1C1C1C7E
+) 06606E6F
+) 00001C1C00001C3C1C1C1C1C1C1C7E
 
 U+0131 LATIN SMALL LETTER DOTLESS I
-: 69 ROMAN MINUSCULE LETTER DOTLESS I [SPACING]
-! PROPORTIONAL
+; 69 ROMAN MINUSCULE LETTER DOTLESS I (SPACING)
+& PROPORTIONAL
 = LATIN SMALL LETTER DOTLESS I
 - Lowercase dotless I
 * This character is always lacking its tittle.
 > 49 ROMAN MINUSCULE LETTER I
-# 00006E6F
-# 0000000000001C3C1C1C1C1C1C1C7E
+) 00006E6F
+) 0000000000001C3C1C1C1C1C1C1C7E
 </TEXTAREA>
 <LABEL>Get character data for: <INPUT ID=codepoint Required Value=0069 MinLength=1 MaxLength=4 Size=4 Pattern=[0-9A-Fa-f]{0,4}></LABEL> <BUTTON ID=go>GO!</BUTTON>
 <DIV ID=result></DIV>
@@ -100,39 +107,29 @@ document.getElementById("go").addEventListener("click", ( ) => {
 		document.getElementById("result").textContent =
 			`CHARSET <${ charset.IRI }>
   Version: ${ charset.version }
-  Revision: ${ charset.revision }
+  Revision: ${ charset.revision }${ charset.alsoKnownAs.size ? Array.from(charset.alsoKnownAs).reduce((output, otherName) => output + `
+    - ${ otherName }`, "\n\n  Also known as:") : "" }${ charset.notes.size ? Array.from(charset.notes).reduce((output, note) => output + `
+    * ${ note }`, "\n\n  Notes:") : "" }
 
 CHARACTER @ ${ new Array(3 - Math.floor(codepoint ? Math.log2(codepoint) / 4 : 0)).fill(0).join("") + codepoint.toString(16).toUpperCase() }${ character ? `
   Unicode mapping: <${ character.unicode.map(( scalar ) => "U+" + (scalar < 0x10000 ? new Array(3 - Math.floor(scalar ? Math.log2(scalar) / 4 : 0)).fill(0).join("") : "") + scalar.toString(16).toUpperCase()).join(", ")}>
   Name: ${ character.name || "" }
   Basic type: ${ character.basicType.replace("https://vocab.KIBI.network/Kixt/#", "") }
-  Block: ${ character.block || "NO BLOCK" }
-  Script: ${ character.script }${ (temp = character.compatibility).length > 1 || temp[0] != character ? `
+  Block: ${ character.block ? character.block.name : "NO BLOCK" }
+  Script: <${ character.script.IRI }>${ (temp = character.compatibility).length > 1 || temp[0] != character ? `
   Compatibility: [${ character.compatibilityMode }] ${ temp.map(( char ) => char.codepoint.toString(16).toUpperCase() + " " + char.name).join(", ") }` : "" }${ (temp = character.decomposition).length > 1 || temp[0] != character ? `
   Decomposition: ${ character.decompositionPreferred ? "[preferred] " : "" }${ temp.map(( char ) => char.codepoint.toString(16).toUpperCase() + " " + char.name).join(", ") }` : "" }
   Deprecated: ${ character.deprecated ? "Yes" : "No" }
   Width: ${ character.fullwidth == null ? "Contextual" : character.fullwidth ? "Fullwidth" : "Proportional" }${ character.conjoiningMode != null ? `
   Conjoins with: <${ character.conjoiningMode }>${ character.conjoiningClass != 0 ? " with class " + character.conjoiningClass.toString(16).toUpperCase() : " as base" }` : "" }
   Combines: ${ character.segments == null ? "No" : character.segments ? "As divider" : "As extender" }${ character.combiningClass != 0 ? " with class " + character.combiningClass.toString(16).toUpperCase() : "" }
-  As text: ${ (character.unicode || []).map(( codepoint ) => String.fromCodePoint(codepoint)).join("") }` : `
+  As text: ${ (character.unicode || []).map(( codepoint ) => String.fromCodePoint(codepoint)).join("") }${ character.aliases.size ? Array.from(character.aliases).reduce((output, alias) => output + `
+    = ${ alias }`, "\n\n  Aliases:") : "" }${ character.alsoKnownAs.size ? Array.from(character.alsoKnownAs).reduce((output, otherName) => output + `
+    - ${ otherName }`, "\n\n  Also known as:") : "" }${ character.notes.size ? Array.from(character.notes).reduce((output, note) => output + `
+    * ${ note }`, "\n\n  Notes:") : "" }${ character.references.size ? Array.from(character.references).reduce((output, reference) => output + `
+    > ${ reference.codepoint.toString(16).toUpperCase() } ${ reference.name }`, "\n\n  See also:") : "" }` : `
   Basic type: UNASSIGNED` }`
-  		if ( character ) {
-			if ( character.aliases.size ) {
-				document.getElementById("result").textContent += "\n\n  Aliases:"
-				character.aliases.forEach(( alias ) => document.getElementById("result").textContent += `
-    = ${ alias }`) }
-			if ( character.alsoKnownAs.size ) {
-				document.getElementById("result").textContent += "\n\n  Also known as:"
-				character.alsoKnownAs.forEach(( otherName ) => document.getElementById("result").textContent += `
-    - ${ otherName }`) }
-			if ( character.notes.size ) {
-				document.getElementById("result").textContent += "\n\n  Notes:"
-				character.notes.forEach(( note ) => document.getElementById("result").textContent += `
-    * ${ note }`) }
-			if ( character.references.size ) {
-				document.getElementById("result").textContent += "\n\n  See also:"
-				character.references.forEach(( reference ) => document.getElementById("result").textContent += `
-    > ${ reference.codepoint.toString(16).toUpperCase() } ${ reference.name }`) }
+		if ( character ) {
 			if ( character.glyphs.dimensions.size ) {
 				document.getElementById("result").textContent += "\n\n  Glyphs:"
 				character.glyphs.dimensions.forEach(( dimension ) => {
@@ -147,6 +144,5 @@ CHARACTER @ ${ new Array(3 - Math.floor(codepoint ? Math.log2(codepoint) / 4 : 0
 					canvas.title = dimension
 					for ( ; pixel < imageData.data.length / 4 ; pixel++ ) imageData.data[pixel * 4 + 0] = imageData.data[pixel * 4 + 1] = imageData.data[pixel * 4 + 2] = 0xFF ^ (imageData.data[pixel * 4 + 3] = 0xFF * glyph.valueAtIndex(pixel))
 					context.putImageData(imageData, 0, 0)
-					document.getElementById("result").appendChild(canvas) }) } } } catch ( error ) { document.getElementById("result").textContent = `${ error.name }: ${ error.message }` }
-})
+					document.getElementById("result").appendChild(canvas) }) } } } catch ( error ) { document.getElementById("result").textContent = `${ error.name }: ${ error.message }` } })
 </SCRIPT>
