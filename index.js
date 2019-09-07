@@ -291,7 +291,7 @@ export class Glyphs {
 			Object.defineProperty(this, size, { value: Object.freeze(sizeObj) }) }) }
 	fit ( height, width ) {
 		let bestSize = void { }
-		sizes.forEach(( size ) => { if ( !bestSize || size > bestSize && size < height || size < bestSize && bestSize > height ) bestSize = size })
+		this.sizes.forEach(( size ) => { if ( !bestSize || size > bestSize && size < height || size < bestSize && bestSize > height ) bestSize = size })
 		if ( !bestSize ) return
 		if ( Object.getOwnPropertyNames(this[bestSize]).length == 1 ) return this[bestSize][Object.getOwnPropertyNames(this[bestSize])[0]]
 		return Math.round(height / width) > 1 ? this[bestSize][bestSize] : this[bestSize][bestSize / 2] } }
