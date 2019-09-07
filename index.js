@@ -63,7 +63,7 @@ Character = class extends SuperCharacter {
 				return result } }
 			, script: { enumerable: true, value: props.script }
 			, segments: { enumerable: true, value: props.segments }
-			, toString: { value: ( ) => props.unicode.map(String.fromCodePoint).join("") }
+			, toString: { value: ( ) => String.fromCodePoint(...props.unicode) }
 			, unicode: { enumerable: true, get: ( ) => props.unicode.slice() } }) } }
 Script = class extends SuperScript {
 	constructor ( context, props ) {
