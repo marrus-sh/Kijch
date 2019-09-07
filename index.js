@@ -259,24 +259,6 @@ export class Charset {
 			, revision: { enumerable: true, value: revision }
 			, scripts: { enumerable: true, value: Object.freeze(scripts) }
 			, version: { enumerable: true, value: version } }) } }
-export class Glyph {
-	constructor ( data ) {
-		if ( !/^(?:[0-9A-Fa-f]{2})+$/.test(typeof data == "number" ? data.toString(16) : data = String(data)) ) throw new TypeError("Glyph data is not convertible into a sequence of hexadecimal octets.")
-		let sqrt = Math.floor(Math.sqrt(data.length * 4))
-		const fullwidth = sqrt * sqrt == data.length * 4
-		if ( !fullwidth ) {
-			sqrt = Math.floor(Math.sqrt(data.length * 8))
-			if ( !(sqrt * sqrt == data.length * 8) ) throw new TypeError("Data is not square or half-square.") }
-		Object.defineProperties(this, {
-			data: { value: data }
-			, height: { value: sqrt }
-			, fullwidth: { value: fullwidth }
-			, width: { value: fullwidth ? sqrt : sqrt / 2 } }) }
-	valueAt ( x, y ) {
-		if ( x >>> 0 > (this.width >>> 0) - 1 || y >>> 0 > (this.height >>> 0) - 1 ) return false
-		const index = (y >>> 0) * (this.width >>> 0) + (x >>> 0)
-		return this.valueAtIndex(index) }
-	valueAtIndex ( i ) { return !!(parseInt(this.data[Math.floor(i / 4)], 16) & 0b1000 >> i % 4) } }
 export class Glyphs {
 	constructor ( glyphsData ) {
 		const dimensions = new Set
@@ -285,16 +267,27 @@ export class Glyphs {
 		Object.defineProperties(this, {
 			dimensions: { get: ( ) => new Set(dimensions) }
 			, sizes: { get: ( ) => new Set(sizes) } })
-		glyphsData.forEach(( glyphData ) => {
-			const glyph = new Glyph(glyphData)
+		glyphsData.forEach(data => {
+			if ( !/^(?:[0-9A-Fa-f]{2})+$/.test(typeof data == "number" ? data.toString(0x10) : data = String(data)) ) throw new TypeError("Glyph data is not convertible into a sequence of hexadecimal octets.")
+			let
+				i = 0
+				, sqrt = Math.floor(Math.sqrt(data.length * 4))
+			const
+				fullwidth = sqrt * sqrt == data.length * 4
+				, view = new DataView(new ArrayBuffer(data.length * 16))
+			if ( !fullwidth ) {
+				sqrt = Math.floor(Math.sqrt(data.length * 8))
+				if ( !(sqrt * sqrt == data.length * 8) ) throw new TypeError("Data is not square or half-square.") }
+			for ( ; i < data.length * 4 ; i++ ) view.setUint32(i * 4, 0x000000FF * !!(parseInt(data[Math.floor(i / 4)], 0x10) & 0b1000 >> i % 4)) // required for proper endianness handling
+			const glyph = new ImageData(new Uint8ClampedArray(view.buffer), fullwidth ? sqrt : sqrt / 2, sqrt)
 			sizes.add(glyph.height)
 			dimensions.add(`${ glyph.width }x${ glyph.height }`)
-			Object.defineProperty(this, `${ glyph.width }x${ glyph.height }`, { enumerable: true, get: ( ) => new Glyph(glyphData) }) })
+			Object.defineProperty(this, `${ glyph.width }x${ glyph.height }`, { enumerable: true, value: glyph }) })
 		sizes.forEach(( size ) => {
 			const sizeObj = { }
 			let temp = void { }
-			if ( dimensions.has(`${ size / 2 }x${ size }`) ) Object.defineProperty(sizeObj, size / 2, { enumerable: true, get: ( ) => this[`${ size / 2 }x${ size }`] })
-			if ( dimensions.has(`${ size }x${ size }`) ) Object.defineProperty(sizeObj, size, { enumerable: true, get: ( ) => this[`${ size }x${ size }`] })
+			if ( dimensions.has(`${ size / 2 }x${ size }`) ) Object.defineProperty(sizeObj, size / 2, { enumerable: true, value: this[`${ size / 2 }x${ size }`] })
+			if ( dimensions.has(`${ size }x${ size }`) ) Object.defineProperty(sizeObj, size, { enumerable: true, value: this[`${ size }x${ size }`] })
 			Object.defineProperty(this, size, { value: Object.freeze(sizeObj) }) }) }
 	fit ( height, width ) {
 		let bestSize = void { }

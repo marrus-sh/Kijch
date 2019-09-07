@@ -133,16 +133,15 @@ CHARACTER @ ${ new Array(3 - Math.floor(codepoint ? Math.log2(codepoint) / 4 : 0
 			if ( character.glyphs.dimensions.size ) {
 				document.getElementById("result").textContent += "\n\n  Glyphs:"
 				character.glyphs.dimensions.forEach(( dimension ) => {
-					const canvas = document.createElement("CANVAS")
+					const
+						canvas = document.createElement("CANVAS")
 						, context = canvas.getContext("2d")
 						, glyph = character.glyphs[dimension]
-						, imageData = context.createImageData(glyph.width, glyph.height)
 					let pixel = 0
 					canvas.width = glyph.width
 					canvas.height = glyph.height
 					canvas.setAttribute("Style", `Width: ${ glyph.width * 4 }PX ; Height: ${ glyph.height * 4 }PX`)
 					canvas.title = dimension
-					for ( ; pixel < imageData.data.length / 4 ; pixel++ ) imageData.data[pixel * 4 + 0] = imageData.data[pixel * 4 + 1] = imageData.data[pixel * 4 + 2] = 0xFF ^ (imageData.data[pixel * 4 + 3] = 0xFF * glyph.valueAtIndex(pixel))
-					context.putImageData(imageData, 0, 0)
+					context.putImageData(glyph, 0, 0)
 					document.getElementById("result").appendChild(canvas) }) } } } catch ( error ) { document.getElementById("result").textContent = `${ error.name }: ${ error.message }` } })
 </SCRIPT>
