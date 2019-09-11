@@ -7,11 +7,11 @@ export const [
 		CONTROL: "https://vocab.KIBI.network/Kixt/#CONTROL"
 		, DATA: "https://vocab.KIBI.network/Kixt/#DATA"
 		, FORMAT: "https://vocab.KIBI.network/Kixt/#FORMAT"
+		, MESSAGING: "https://vocab.KIBI.network/Kixt/#MESSAGING"
 		, NONCHARACTER: "https://vocab.KIBI.network/Kixt/#NONCHARACTER"
 		, NONSPACING: "https://vocab.KIBI.network/Kixt/#NONSPACING"
 		, PRIVATEUSE: "https://vocab.KIBI.network/Kixt/#PRIVATEUSE"
 		, SPACING: "https://vocab.KIBI.network/Kixt/#SPACING"
-		, TRANSMISSION: "https://vocab.KIBI.network/Kixt/#TRANSMISSION"
 		, UNASSIGNED: "https://vocab.KIBI.network/Kixt/#UNASSIGNED" })
 	, "NO BLOCK"
 	, "https://vocab.KIBI.network/Kixt/#" ]
@@ -186,7 +186,7 @@ export class Charset {
 				while ( match = line.match(/^ *U\+(0*(?:10|[1-9A-F])[0-9A-F]{0,4}|0+)(?: [^\x00-\x1F\x7F-\x9F\uD800-\uDFFF\uFDD0-\uFDEF\uFFF0-\uFFFF\u{1FFFE}\u{1FFFF}\u{2FFFE}\u{2FFFF}\u{3FFFE}\u{3FFFF}\u{4FFFE}\u{4FFFF}\u{5FFFE}\u{5FFFF}\u{6FFFE}\u{6FFFF}\u{7FFFE}\u{7FFFF}\u{8FFFE}\u{8FFFF}\u{9FFFE}\u{9FFFF}\u{AFFFE}\u{AFFFF}\u{BFFFE}\u{BFFFF}\u{CFFFE}\u{CFFFF}\u{DFFFE}-\u{E0FFF}\u{EFFFE}\u{EFFFF}\u{FFFFE}\u{FFFFF}\u{10FFFE}\u{10FFFF}]*)?$/u) ) { // <UnicodeMapping>
 					props.unicode.push(parseInt(match[1], 16))
 					moveToNextNonCommentLine() }
-				match = line.match(/^ *; *(?:((?:0 ?)*1(?: ?[01])*|(?:0 ?)+) *\/|(0*[1-9A-F][0-9A-F]{0,3}|0+) ) *([A-Z](?:[0-9A-Z]| (?:[A-Z]|-[0-9A-Z])|-(?:[0-9A-Z]| (?:[A-Z]|-[0-9A-Z])))*) *\((CONTROL|TRANSMISSION|FORMAT|DATA|NONSPACING|SPACING|PRIVATEUSE|NONCHARACTER)\) *$/u) // <CharacterInfo>
+				match = line.match(/^ *; *(?:((?:0 ?)*1(?: ?[01])*|(?:0 ?)+) *\/|(0*[1-9A-F][0-9A-F]{0,3}|0+) ) *([A-Z](?:[0-9A-Z]| (?:[A-Z]|-[0-9A-Z])|-(?:[0-9A-Z]| (?:[A-Z]|-[0-9A-Z])))*) *\((CONTROL|MESSAGING|FORMAT|DATA|NONSPACING|SPACING|PRIVATEUSE|NONCHARACTER)\) *$/u) // <CharacterInfo>
 				if ( !match ) throw new TypeError(`Character definition does not contain well-formed character info on line ${ index + 1} of input.`)
 				props.codepoint = match[1] ? parseInt(match[1].replace(/ /gu, ""), 2) : parseInt(match[2], 16)
 				if ( characters[props.codepoint] ) throw new TypeError(`Redefinition of codepoint ${ new Array(3 - Math.floor(props.codepoint ? Math.log2(props.codepoint) / 4 : 0)).fill(0).join("") + props.codepoint.toString(16).toUpperCase() } on line ${ index + 1} of input.`)
